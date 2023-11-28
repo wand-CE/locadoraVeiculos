@@ -1,0 +1,102 @@
+{% extends 'base.html' %} {% load bootstrap4 %} {% block conteudo %}
+<section data-bs-version="5.1" class="header1 cid-tWoy120EB9" id="header01-1i">
+    <div class="container">
+        <div class="row justify-content-center border border-ligth">
+            <div class="col-12 p-5">
+                <h6 class="mbr-section-subtitle mbr-fonts-style mb-4 display-3">
+                    Criar Contrato
+                </h6>
+                <form method="post">
+                    {% csrf_token %} {% for field in form%} {% if field.name == 'cliente' %}
+                    <div class="d-flex">
+                        <div class="flex-grow-1">{% bootstrap_field field %}</div>
+                        <div
+                                class="btn"
+                                id="add_cliente"
+                                data-toggle="modal"
+                                data-target="#modalCliente"
+                        >
+                            <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    x="0px"
+                                    y="0px"
+                                    width="25"
+                                    height="25"
+                                    viewBox="0 0 50 50"
+                                    class="mx-1"
+                            >
+                                <path
+                                        d="M 25 2 C 12.309295 2 2 12.309295 2 25 C 2 37.690705 12.309295 48 25 48 C 37.690705 48 48 37.690705 48 25 C 48 12.309295 37.690705 2 25 2 z M 25 4 C 36.609824 4 46 13.390176 46 25 C 46 36.609824 36.609824 46 25 46 C 13.390176 46 4 36.609824 4 25 C 4 13.390176 13.390176 4 25 4 z M 24 13 L 24 24 L 13 24 L 13 26 L 24 26 L 24 37 L 26 37 L 26 26 L 37 26 L 37 24 L 26 24 L 26 13 L 24 13 z"
+                                ></path>
+                            </svg>
+                            <span class="d-none d-lg-block">Adicionar</span>                            
+                        </div>
+                    </div>
+                    {% else %} {% bootstrap_field field %} {% endif %} {% endfor %}
+                    <input type="submit" class="btn btn-primary" value="Criar"/>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="modalCliente" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="mbr-section-subtitle mbr-fonts-style mb-4 display-3">
+                    Cadastrar Cliente
+                </h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-5">
+                <form method="post">
+                    {% csrf_token %} {% bootstrap_form form_criar_cliente %}
+                    <input type="submit" class="btn btn-primary w-100" id="createCliente" value="Criar"/>
+                </form>
+            </div>        
+        </div>
+    </div>
+</div>
+
+
+  
+
+{% endblock conteudo %} {% block extra_body %}
+<script>
+    let modalCliente = document.querySelector("#modalCliente");        
+    let form = modalCliente.querySelector("form");
+    console.log(form);
+
+    form.addEventListener("submit", (event)=>{
+        event.preventDefault();
+        let botaoFechar = modalCliente.querySelector(".close")
+      
+        let data = new FormData(form);
+        
+        fetch('/criarCliente/', {
+        method: 'POST',
+        body: data,
+        },).then(res => res.json()).then(
+        (data)=>{
+            let clientesSelect = document.querySelector("#id_cliente");
+            let novo_cliente = document.createElement("option");
+
+            novo_cliente.textContent = data.cliente;
+
+            let ultimoValor = clientesSelect.lastElementChild.value;
+
+            novo_cliente.value = ultimoValor ? `${parseInt(ultimoValor) + 1}` : "1";
+
+            clientesSelect.append(novo_cliente);
+            clientesSelect.value = novo_cliente.value;
+
+            botaoFechar.click();
+            form.reset();
+
+        }
+        );
+    })
+</script>
+{% endblock extra_body %}
