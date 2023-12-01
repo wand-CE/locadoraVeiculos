@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
+{% endblock extra_head %}
+{% block conteudo %}
+<section data-bs-version="5.1" class="header1 cid-tWoy120EB9" id="header01-1i">
+    <div class="container">
+        <table id="tabela" class="table table-bordered table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Foto</th>
+                <th scope="col">Nome</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Placa</th>
+                <th scope="col">#</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for values in veiculos.values %}
+            {% for veiculo in values %}
+            <tr>
+                <td style="width:100px">
+                    <img src="/media/{{ veiculo.foto }}">
+                </td>
+                <td>
+                    {{ veiculo.nome|truncatechars:8 }}
+                </td>
+                <td>
+                    {{ veiculo.tipo }}
+                </td>
+                <td>
+                    {{ veiculo.placa }}
+                </td>
+
+                <td style="font-size: x-large">
+                    <a href="{% url 'editarVeiculo' veiculo.id veiculo.tipo %}" class="bi bi-pencil-square"></a>
+                    <a href="{% url 'removerVeiculo' veiculo.id %}" class="bi bi-trash"></a>
+                </td>
+                {% endfor %}
+
+                {% empty %}
+                <td colspan="5">Sem veiculos cadastrados!!!</td>
+                <a href="{% url 'criarVeiculo' %}" role="button">Cadastrar</a>
+                {% endfor %}
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</section>
+{% endblock conteudo %}
+{% block extra_body %}
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#tabela').DataTable({
+        "language": {
+            "lengthMenu": "_MENU_ elementos por página",
+            "zeroRecords": "Nada encontrado - desculpe",
+            "info": "_PAGE_ de _PAGES_",
+            "infoEmpty": "Nenhum veículo cadastrado",
+            "infoFiltered": "(filtrado de _MAX_ elementos)",
+            "paginate": {
+                "first": "Primeiro",
+                "last": "Ultimo",
+                "next": "Próximo",
+                "previous": "Anterior"
+            },
+            "search": "Pesquisar:",
+        },
+        "aLengthMenu": [[5, 10, 15, 20, 25, -1], [5, 10, 15, 20, 25, "Todos"]],
+        "iDisplayLength": 5});
+    });
+    
+</script>
+{% endblock extra_body %}
+{% block remove_on_lista_veiculos %}{% endblock remove_on_lista_veiculos %}
+

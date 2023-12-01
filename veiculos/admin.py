@@ -24,7 +24,8 @@ class VeiculoAdmin(admin.ModelAdmin):
 @admin.register(Onibus)
 class OnibusAdmin(admin.ModelAdmin):
     form = OnibusForm
-    list_display = ['nome', 'numPassageiros', 'placa', 'dataProxManut', 'disponivel']
+    list_display = ['nome', 'numPassageiros',
+                    'placa', 'dataProxManut', 'disponivel']
 
     def get_veiculo(self, instance, attribute):
         try:
@@ -51,7 +52,8 @@ class OnibusAdmin(admin.ModelAdmin):
 class AutomovelAdmin(admin.ModelAdmin):
     form = AutomovelForm
 
-    list_display = ['nome', 'numPortas', 'placa', 'dataProxManut', 'disponivel']
+    list_display = ['nome', 'numPortas',
+                    'placa', 'dataProxManut', 'disponivel']
 
     def get_veiculo(self, instance, attribute):
         try:

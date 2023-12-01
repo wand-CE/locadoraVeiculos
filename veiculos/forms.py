@@ -2,18 +2,24 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import RegexValidator
 from django.db.models import Q
 
 from veiculos.models import Veiculo, Automovel, Onibus, TipoVeiculo, Contrato, Cliente
 
 
 class VeiculoForm(forms.ModelForm):
-    placa = forms.CharField(max_length=7, required=True)
+    placa_validator = RegexValidator(
+        regex=r'^[A-Z]{3}\d{4}$',
+        message='Placa inválida. Use o formato AAA1234.'
+    )
+
+    placa = forms.CharField(max_length=7, required=True, validators=[placa_validator])
     dataProxManut = forms.DateField(required=True, label='Data da próxima manutenção',
                                     widget=forms.DateInput(attrs={'type': 'date',
                                                                   'value': datetime.now().date}))
     disponivel = forms.BooleanField(initial=True, required=False)
-    foto = forms.ImageField(required=False)
+    foto = forms.ImageField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,6 +35,7 @@ class VeiculoForm(forms.ModelForm):
     def clean(self):
         errors = {}
         data = self.cleaned_data
+
         placa = data.get('placa', None)
         dataProxManut = data.get('dataProxManut', None)
 

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+<section data-bs-version="5.1" class="header1 cid-tWoy120EB9" id="header01-1i">
+    <article class="container border p-5">
+        <h2>Excluindo Veiculo</h2>
+        <form method="post">
+            {% csrf_token %}
+            <p>Você confirma a exclusão do {{ object }}?</p>
+            <input type="submit" value="Confirmar" class="btn text-white" style="background-color: red">
+            <a href="{% url 'listaVeiculos' %}" role="button" class="btn btn-primary">Cancelar</a>
+        </form>
+    </article>
+</section>
+{% endblock conteudo %}

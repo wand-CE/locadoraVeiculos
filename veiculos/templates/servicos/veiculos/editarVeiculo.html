@@ -6,13 +6,15 @@
         <div class="row justify-content-center border border-ligth">
             <div class="col-12 p-5">
                 <h6 class="mbr-section-subtitle mbr-fonts-style mb-4 display-3">
-                    Criar Cliente
+                    Editar {% if form.numPassageiros %}Ônibus{% else %}Automóvel{% endif %}
                 </h6>
-                <form method="post">
-                    {% csrf_token %}
-                    {% bootstrap_form form %}
-                    <input type="submit" class="btn btn-primary" value="Criar">
-                </form>
+                <div id="form">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% bootstrap_form form %}
+                        <input type="submit" class="btn btn-primary w-100" value="Salvar">
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+{% block conteudo %}
+<section data-bs-version="5.1" class="header1 cid-tWoy120EB9" id="header01-1i">
+    <div class="container">
+        <div class="row justify-content-center border border-ligth">
+            <div class="col-12 p-5">
+                <h6 class="mbr-section-subtitle mbr-fonts-style mb-4 display-3">
+                    Adicionar Veículo
+                </h6>
+                Tipo de Veículo:
+                <div class="form-check">
+                    <label class="form-check-label">
+                        {% if radio_checked == 'automovel' %}
+                        <input class="form-check-input" name="veiculo_tipo" type="radio" value="automovel" checked>
+                        {% else %}
+                        <input class="form-check-input" name="veiculo_tipo" type="radio" value="automovel">
+                        {% endif %}
+                        Automóvel
+                    </label>
+                </div>
+                <div class="form-check">
+                    <label class="form-check-label">
+                        {% if radio_checked == 'onibus' %}
+                        <input class="form-check-input" name="veiculo_tipo" type="radio" value="onibus" checked>
+                        {% else %}
+                        <input class="form-check-input" name="veiculo_tipo" type="radio" value="onibus">
+                        {% endif %}
+                        Õnibus
+                    </label>
+                </div>
+                <div class="{% if radio_checked == 'automovel' %}d-block{% else %}d-none{% endif %}"
+                     id="form_automovel">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% bootstrap_form form_automovel %}
+                        <input type="hidden" name="tipo_veiculo" value="automovel">
+                        <input type="submit" class="btn btn-primary w-100" value="Criar">
+                    </form>
+                </div>
+                <div class="{% if radio_checked == 'onibus' %}d-block{% else %}d-none{% endif %}" id="form_onibus">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% bootstrap_form form_onibus %}
+                        <input type="hidden" name="tipo_veiculo" value="onibus">
+                        <input type="submit" class="btn btn-primary w-100" value="Criar">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock conteudo %}
+{% block extra_body %}
+<script>
+    let form_automovel = document.getElementById("form_automovel");
+    let form_onibus = document.getElementById("form_onibus");
+
+    document.querySelectorAll("input[name='veiculo_tipo']").forEach((item)=>{
+        item.addEventListener('input', item => {
+            form_automovel.classList.toggle('d-none');
+            form_automovel.classList.toggle('d-block');
+
+            form_onibus.classList.toggle('d-none');
+            form_onibus.classList.toggle('d-block');
+
+        });
+    });
+
+
+</script>
+{% endblock extra_body %}
