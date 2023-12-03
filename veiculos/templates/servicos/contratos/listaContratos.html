@@ -9,45 +9,44 @@
         <table id="tabela" class="table table-bordered table-striped">
             <thead class="thead-dark">
             <tr>
-                <th scope="col">Foto</th>
-                <th scope="col">Nome</th>
-                <th scope="col">Tipo</th>
-                {% if user.is_authenticated %}
-                <th scope="col">Placa</th>
+                <th scope="col">Escritório</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Veículo</th>
+                <th scope="col">Fim do contrato</th>
+                {% for group in user.groups.all %}
+                {% if group.name == 'especiais' %}
                 <th scope="col">#</th>
-                {% endif %}
-            </tr>
-            </thead>
-            <tbody>
-            {% for values in veiculos.values %}
-            {% for veiculo in values %}
-            <tr>
-                <td style="width:100px">
-                    <img src="/media/{{ veiculo.foto }}">
-                </td>
-                <td>
-                    {{ veiculo.nome|truncatechars:8 }}
-                </td>
-                <td>
-                    {{ veiculo.tipo }}
-                </td>
-                {% if user.is_authenticated %}
-                <td>
-                    {{ veiculo.placa }}
-                </td>
-
-                <td style="font-size: x-large">
-                    <a href="{% url 'editarVeiculo' veiculo.id veiculo.tipo %}" class="bi bi-pencil-square"></a>
-                    <a href="{% url 'removerVeiculo' veiculo.id %}" class="bi bi-trash"></a>
-                </td>
                 {% endif %}
                 {% endfor %}
 
-                {% empty %}
-                <td colspan="5">Sem veiculos cadastrados!!!</td>
-                {% if user.is_authenticated %}
-                <a href="{% url 'criarVeiculo' %}" role="button">Cadastrar</a>
+            </tr>
+            </thead>
+            <tbody>
+            {% for c in contratos %}
+            <tr>
+                <td>
+                    {{ c.numEscritorio.nome }}
+                </td>
+                <td>
+                    {{ c.cliente.nome }}
+                </td>
+                <td>
+                    {{ c.veiculo.tipoVeiculo.nome }}
+                </td>
+                <td>
+                    {{ c.duracao }}
+                </td>
+
+                {% for group in user.groups.all %}
+                {% if group.name == 'especiais' %}
+                <td style="font-size: x-large">
+                    <a href="{% url 'removerContrato' c.id %}" class="bi bi-trash"></a>
+                </td>
                 {% endif %}
+                {% endfor %}
+                {% empty %}
+                <td colspan="5">Sem contratos cadastrados!!!</td>
+                <a href="{% url 'criarContrato' %}" role="button">Cadastrar</a>
                 {% endfor %}
             </tr>
             </tbody>

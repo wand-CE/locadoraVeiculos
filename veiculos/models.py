@@ -17,7 +17,7 @@ class Escritorio(models.Model):
 
 class Cliente(models.Model):
     nome = models.CharField(max_length=100, null=False)
-    numHab = models.CharField(max_length=11, null=False, verbose_name="Número de Habilitação")
+    numHab = models.CharField(max_length=11, null=False, verbose_name="Número de Habilitação", unique=True)
     endereco = models.CharField(max_length=250, null=False)
     telefone = models.CharField(max_length=11, null=False)
 
@@ -91,8 +91,8 @@ class Contrato(models.Model):
     numEscritorio = models.ForeignKey(Escritorio, on_delete=models.SET_NULL, null=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.SET_NULL, null=True)
     veiculo = models.ForeignKey(Veiculo, on_delete=models.SET_NULL, null=True, limit_choices_to={'disponivel': True})
-    data = models.DateField(auto_now_add=True, null=False)
-    duracao = models.IntegerField(null=False, verbose_name='Duração do Contrato em dias')
+    data = models.DateField(auto_now_add=True, null=False, )
+    duracao = models.DateField(null=False, verbose_name='Duração do Contrato')
 
     class Meta:
         verbose_name = 'Contrato'

@@ -21,14 +21,13 @@
         <div class="row justify-content-center border border-ligth">
             <div class="col-12">
                 <h6 class="mbr-section-subtitle mbr-fonts-style mb-4 display-3">
-                    Login
+                    Login vendedor/admin
                 </h6>
                 <form method="post">
                     {% csrf_token %}
                     {% bootstrap_form form %}
                     <input type="submit" class="btn btn-primary" value="Entrar">
                 </form>
-                <p>Não possui uma conta? <a class="text-info" href="{% url 'cadusuario' %}">Crie aqui!</a></p>
             </div>
         </div>
     </div>

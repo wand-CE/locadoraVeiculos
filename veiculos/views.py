@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -5,10 +7,9 @@ from django.contrib.auth.views import LogoutView
 from django.http import JsonResponse, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
-from django.views import View
 from django.views.generic import TemplateView, ListView, FormView, CreateView, DeleteView, UpdateView
 from django.contrib import messages
-from veiculos.forms import CadUsuarioForm, CriarContratoForm, CriarClienteForm, OnibusForm, AutomovelForm
+from veiculos.forms import CriarContratoForm, CriarClienteForm, OnibusForm, AutomovelForm
 from veiculos.models import Veiculo, TipoVeiculo, Contrato, Cliente, Automovel, Onibus
 from django.contrib.auth.models import User
 
@@ -17,21 +18,6 @@ class HomeView(ListView):
     template_name = 'index.html'
     queryset = TipoVeiculo.tipoquery.all()
     context_object_name = 'cars'
-
-
-class CadUsuarioView(FormView):
-    template_name = 'usuario/cadastro.html'
-    form_class = CadUsuarioForm
-    success_url = reverse_lazy('home')
-
-    def form_valid(self, form):
-        form.save()
-        messages.success(self.request, message='Usuario Cadastrado!!!')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, 'Não foi possível cadastrar')
-        return super().form_invalid(form)
 
 
 class LoginUserView(FormView):
@@ -47,12 +33,11 @@ class LoginUserView(FormView):
         if usuario is not None:
             login(self.request, usuario)
             return redirect('home')
-        messages.error(self.request, 'Usuário não cadastrado')
+        messages.error(self.request, 'Vendedor não cadastrado')
         return redirect('loginusuario')
 
     def form_invalid(self, form):
         messages.error(self.request, 'Não foi possível logar')
-        return super().form_invalid(form)
         return redirect('loginusuario')
 
 
@@ -63,11 +48,41 @@ class LogoutUserView(LoginRequiredMixin, LogoutView):
         return redirect('home')
 
 
-class CriarContratoView(LoginRequiredMixin, CreateView):
-    template_name = 'servicos/criarContrato.html'
+class ListaContratoView(LoginRequiredMixin, ListView):
+    template_name = 'servicos/contratos/listaContratos.html'
     model = Contrato
-    form_class = CriarContratoForm
-    success_url = reverse_lazy('criarContrato')
+    queryset = Contrato.objects.all()
+    context_object_name = 'contratos'
+
+
+class CriarContratoView(LoginRequiredMixin, CreateView):
+    template_name = 'servicos/contratos/criarContrato.html'
+    success_url = reverse_lazy('listaContratos')
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.groups.filter(name='especiais').exists():
+            return super().dispatch(request, *args, **kwargs)
+
+        messages.error(self.request,
+                       'Você não faz parte do grupo especiais para manipular contratos, peça para seu admin colocá-lo')
+        return redirect('listaContratos')
+
+    def get_form_class(self):
+        hoje = datetime.now().date()
+
+        for veiculo in Veiculo.objects.filter(disponivel=False):
+            contratos = Contrato.objects.filter(veiculo=veiculo)
+            if contratos:
+                contrato_recente = contratos.order_by('-duracao').first()
+                if contrato_recente.duracao < hoje:
+                    veiculo.disponivel = True
+                    veiculo.save()
+            else:
+                veiculo.disponivel = True
+                veiculo.save()
+        return CriarContratoForm
 
     def get_context_data(self, **kwargs):
         contexto = super().get_context_data()
@@ -76,11 +91,28 @@ class CriarContratoView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.save()
+        messages.success(self.request, message='Contrato cadastrado!!!')
         return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, message='Contrato não cadastrado')
-        return reverse_lazy('criarContrato')
+        return super().form_invalid(form)
+
+
+class RemoverContratoView(LoginRequiredMixin, DeleteView):
+    model = Contrato
+    template_name = 'servicos/contratos/removerContrato.html'
+    success_url = reverse_lazy('listaContratos')
+
+    def dispatch(self, request, *args, **kwargs):
+        user = self.request.user
+
+        if user.groups.filter(name='especiais').exists():
+            return super().dispatch(request, *args, **kwargs)
+
+        messages.error(self.request,
+                       'Você não faz parte do grupo especiais para manipular contratos, peça para seu admin colocá-lo')
+        return redirect('listaContratos')
 
 
 class CriarVeiculoView(LoginRequiredMixin, TemplateView):
@@ -123,7 +155,7 @@ class CriarVeiculoView(LoginRequiredMixin, TemplateView):
         return redirect('listaVeiculos')
 
 
-class ListarVeiculoView(LoginRequiredMixin, ListView):
+class ListarVeiculoView(ListView):
     template_name = 'servicos/veiculos/listaVeiculos.html'
     model = Veiculo
     context_object_name = 'veiculos'
@@ -167,7 +199,7 @@ class RemoverVeiculoView(DeleteView):
 
 
 class EditarVeiculoView(UpdateView):
-    template_name = 'servicos/veiculos/editarCliente.html'
+    template_name = 'servicos/veiculos/editarVeiculo.html'
     success_url = reverse_lazy('listaVeiculos')
     model = TipoVeiculo
 
@@ -181,14 +213,6 @@ class EditarVeiculoView(UpdateView):
 
         raise Http404
 
-    def get_context_data(self, **kwargs):
-        contexto = super().get_context_data()
-        contexto['nome_tipo_veiculo'] = 'Automóvel' if 'w' else 'Ônibus'
-        print(contexto['nome_tipo_veiculo'])
-        print(type(self.form_class))
-
-        return contexto
-
 
 class CriarClienteView(LoginRequiredMixin, FormView):
     template_name = 'servicos/clientes/criarCliente.html'
@@ -198,20 +222,25 @@ class CriarClienteView(LoginRequiredMixin, FormView):
         form = CriarClienteForm(request.POST)
         input_pagina = request.POST.get('input_pagina', None)
 
-        if not input_pagina:
-            if form.is_valid():
-                dados = form.cleaned_data
-                novo_cliente = Cliente.objects.create(
-                    nome=dados['nome'],
-                    numHab=dados['numHab'],
-                    endereco=dados['endereco'],
-                    telefone=dados['telefone'])
-                novo_cliente.save()
+        if form.is_valid():
+            dados = form.cleaned_data
+            novo_cliente = Cliente.objects.create(
+                nome=dados['nome'],
+                numHab=dados['numHab'],
+                endereco=dados['endereco'],
+                telefone=dados['telefone'])
+            novo_cliente.save()
+
+            if not input_pagina:
                 return JsonResponse({'cliente': f'{novo_cliente}'})
             else:
-                raise Http404
+                messages.success(self.request, message='Cliente Cadastrado!!!')
+                return redirect('listaClientes')
         else:
-            return redirect('listaClientes')
+            if not input_pagina:
+                return JsonResponse({'erro': 'erro ao criar novo Cliente'})
+            else:
+                return render(request, self.template_name, {'form': form, })
 
 
 class ListarClientesView(LoginRequiredMixin, ListView):

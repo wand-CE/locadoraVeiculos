@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
@@ -178,16 +178,20 @@ class OnibusForm(VeiculoForm):
             return veiculo
 
 
-class CadUsuarioForm(UserCreationForm):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password1', 'password2', 'first_name', 'last_name']
-
-
 class CriarContratoForm(forms.ModelForm):
+    duracao = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = Contrato
         fields = '__all__'
+
+    def clean_duracao(self):
+        duracao = self.cleaned_data['duracao']
+
+        if duracao < datetime.now().date() + timedelta(days=1):
+            raise forms.ValidationError("O contrato deve durar pelo menos 1 dia")
+
+        return duracao
 
 
 class CriarClienteForm(forms.ModelForm):
