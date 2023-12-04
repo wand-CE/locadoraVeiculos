@@ -70,11 +70,9 @@
             let clientesSelect = document.querySelector("#id_cliente");
             let novo_cliente = document.createElement("option");
 
-            novo_cliente.textContent = data.cliente;
+            novo_cliente.textContent = data.nome;
 
-            let ultimoValor = clientesSelect.lastElementChild.value;
-
-            novo_cliente.value = ultimoValor ? `${parseInt(ultimoValor) + 1}` : "1";
+            novo_cliente.value = data.cliente_id;
 
             clientesSelect.append(novo_cliente);
             clientesSelect.value = novo_cliente.value;

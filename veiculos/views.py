@@ -7,6 +7,7 @@ from django.contrib.auth.views import LogoutView
 from django.http import JsonResponse, Http404
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.generic import TemplateView, ListView, FormView, CreateView, DeleteView, UpdateView
 from django.contrib import messages
 from veiculos.forms import CriarContratoForm, CriarClienteForm, OnibusForm, AutomovelForm
@@ -26,15 +27,23 @@ class LoginUserView(FormView):
     form_class = AuthenticationForm
     success_url = reverse_lazy('home')
 
+    def get_success_url(self):
+        redirect_to = self.request.GET.get('next', '')
+        if url_has_allowed_host_and_scheme(redirect_to, allowed_hosts=self.request.get_host()):
+            return redirect_to
+        return super().get_success_url()
+
     def form_valid(self, form):
         username = form.cleaned_data['username']
         senha = form.cleaned_data['password']
+
         usuario = authenticate(self.request, username=username, password=senha)
         if usuario is not None:
             login(self.request, usuario)
-            return redirect('home')
-        messages.error(self.request, 'Vendedor não cadastrado')
-        return redirect('loginusuario')
+            messages.success(self.request, f'Seja bem vindo {username}!')
+            return redirect(self.get_success_url())
+
+        return self.form_invalid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, 'Não foi possível logar')
@@ -232,7 +241,7 @@ class CriarClienteView(LoginRequiredMixin, FormView):
             novo_cliente.save()
 
             if not input_pagina:
-                return JsonResponse({'cliente': f'{novo_cliente}'})
+                return JsonResponse({'nome': f'{novo_cliente}', 'cliente_id': novo_cliente.id})
             else:
                 messages.success(self.request, message='Cliente Cadastrado!!!')
                 return redirect('listaClientes')
